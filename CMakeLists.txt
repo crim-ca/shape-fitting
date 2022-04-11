@@ -10,6 +10,7 @@ find_package(Boost COMPONENTS system filesystem regex REQUIRED)
 
 SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O3 -Wno-comment -Wno-deprecated-declarations -std=c++11")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include
   test
