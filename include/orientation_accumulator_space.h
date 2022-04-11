@@ -14,7 +14,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #ifndef ORIENTATIONACCUMULATORSPACE_H
 #define ORIENTATIONACCUMULATORSPACE_H
 #include "boost/shared_ptr.hpp"
+#include "boost/thread/thread.hpp"
 #include "fitting_data.h"
+
 class OrientationAccumulatorSpace
 {
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> sphereViz (pcl::PointCloud<pcl::PointXYZ>::ConstPtr cloud)
