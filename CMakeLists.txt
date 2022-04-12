@@ -13,7 +13,6 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(include
-  test
   ${PCL_INCLUDE_DIRS}
 )
 
@@ -22,17 +21,23 @@ add_library (fitting_library src/cylinder_fitting.cpp src/cylinder_fitting_hough
 target_link_libraries (fitting_library ${PCL_LIBRARIES})
 
 # TESTS
-add_executable(cylinder_generation test/cylinder_generation.cpp)
-target_link_libraries(cylinder_generation ${PCL_LIBRARIES})
+option(BUILD_TESTS "Build tests" OFF)
+if (BUILD_TESTS)
+    find_package(yaml-cpp)
+    include_directories(test ${YAML_CPP_INCLUDE_DIR})
 
-add_executable(sphere_generation test/sphere_generation.cpp)
-target_link_libraries(sphere_generation ${PCL_LIBRARIES})
+    add_executable(cylinder_generation test/cylinder_generation.cpp)
+    target_link_libraries(cylinder_generation ${PCL_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
-add_executable(cylinder_fitting_test test/cylinder_fitting_test.cpp)
-target_link_libraries(cylinder_fitting_test ${PCL_LIBRARIES} fitting_library)
+    add_executable(sphere_generation test/sphere_generation.cpp)
+    target_link_libraries(sphere_generation ${PCL_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
-add_executable(sphere_fitting_test test/sphere_fitting_test.cpp)
-target_link_libraries(sphere_fitting_test ${PCL_LIBRARIES} fitting_library)
+    add_executable(cylinder_fitting_test test/cylinder_fitting_test.cpp)
+    target_link_libraries(cylinder_fitting_test ${PCL_LIBRARIES} ${YAML_CPP_LIBRARIES} fitting_library)
 
-add_executable(cylinder_real_data_test test/cylinder_real_data_test.cpp)
-target_link_libraries(cylinder_real_data_test ${PCL_LIBRARIES} fitting_library)
+    add_executable(sphere_fitting_test test/sphere_fitting_test.cpp)
+    target_link_libraries(sphere_fitting_test ${PCL_LIBRARIES} ${YAML_CPP_LIBRARIES} fitting_library)
+
+    add_executable(cylinder_real_data_test test/cylinder_real_data_test.cpp)
+    target_link_libraries(cylinder_real_data_test ${PCL_LIBRARIES} ${YAML_CPP_LIBRARIES} fitting_library)
+endif (BUILD_TESTS)
