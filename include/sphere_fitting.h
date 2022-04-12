@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
+/*!
     \author Rui Figueiredo : ruipimentelfigueiredo
 */
 #ifndef SPHEREFITTING_H
@@ -25,6 +25,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <pcl/filters/project_inliers.h>
 #include <pcl/registration/icp.h>
 #include <pcl/features/principal_curvatures.h>
+#include <pcl/sample_consensus/sac_model_sphere.h>
 #include <Eigen/Geometry>
 
 #include "gaussian_sphere.h"
@@ -45,7 +46,7 @@ class SphereFitting
 	// Normal estimation
 	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals;// (new pcl::PointCloud<pcl::Normal>);
 	pcl::NormalEstimation<PointT, pcl::Normal> ne;
-	pcl::search::KdTree<PointT>::Ptr tree; 
+	pcl::search::KdTree<PointT>::Ptr tree;
 
 	PointCloudT::Ptr cloud_filtered;// (new pcl::PointCloud<PointT>);
 	PointCloudT::Ptr transformed_cloud;// (new pcl::PointCloud<PointT> ());
@@ -56,12 +57,12 @@ class SphereFitting
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> simpleVis (PointCloudT::ConstPtr cloud,  pcl::PointCloud<pcl::Normal>::ConstPtr normals, pcl::ModelCoefficients::Ptr coefficients_cylinder);
 	public:
-		SphereFitting(float min_radius_=0.01,float max_radius_=0.1, bool do_refine_=false) : 
-			min_radius(min_radius_), 
-			max_radius(max_radius_), 
+		SphereFitting(float min_radius_=0.01,float max_radius_=0.1, bool do_refine_=false) :
+			min_radius(min_radius_),
+			max_radius(max_radius_),
 			do_refine(do_refine_),
 			cloud_normals(new pcl::PointCloud<pcl::Normal>),
-			tree(new pcl::search::KdTree<PointT> ()),	
+			tree(new pcl::search::KdTree<PointT> ()),
 			cloud_filtered(new pcl::PointCloud<PointT>),
 			transformed_cloud(new pcl::PointCloud<PointT> ()),
 			inliers_cylinder(new pcl::PointIndices)
