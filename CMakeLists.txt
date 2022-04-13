@@ -23,7 +23,7 @@ target_link_libraries (fitting_library ${PCL_LIBRARIES})
 # TESTS
 option(BUILD_TESTS "Build tests" OFF)
 if (BUILD_TESTS)
-    find_package(yaml-cpp)
+    find_package(yaml-cpp REQUIRED)
     include_directories(test ${YAML_CPP_INCLUDE_DIR})
 
     add_executable(cylinder_generation test/cylinder_generation.cpp)
