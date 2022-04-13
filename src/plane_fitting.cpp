@@ -1,6 +1,6 @@
 #include "plane_fitting.h"
 
-PlaneFitting::PlaneFitting(double table_z_filter_min_, double table_z_filter_max_,double cluster_tolerance_, int min_cluster_size_,int max_cluster_size_, int inlier_threshold_, bool do_refine_) : 
+PlaneFitting::PlaneFitting(double table_z_filter_min_, double table_z_filter_max_,double cluster_tolerance_, int min_cluster_size_,int max_cluster_size_, int inlier_threshold_, bool do_refine_) :
 	table_z_filter_min(table_z_filter_min_),
 	table_z_filter_max(table_z_filter_max_),
 	cluster_tolerance(cluster_tolerance_),
@@ -36,15 +36,15 @@ PointCloudT::Ptr PlaneFitting::getTableCloud()
 
 
 void PlaneFitting::getClustersFromPointCloud (
-				const PointCloudT &cloud_objects, 			    
-			    const std::vector<pcl::PointIndices> &clusters2, 
+				const PointCloudT &cloud_objects,
+			    const std::vector<pcl::PointIndices> &clusters2,
 			    std::vector<PointCloudT> &clusters)
 {
 	clusters.resize (clusters2.size ());
 	for (size_t i = 0; i < clusters2.size (); ++i)
 	{
 		pcl::PointCloud<PointT> cloud_cluster;
-		pcl::copyPointCloud(cloud_objects, clusters2[i], clusters[i]);    
+		pcl::copyPointCloud(cloud_objects, clusters2[i], clusters[i]);
 	}
 }
 
@@ -77,7 +77,7 @@ void PlaneFitting::extractTabletopClusters(PointCloudT::ConstPtr input_cloud, pc
 			pcl::OrganizedConnectedComponentSegmentation<pcl::PointXYZ,pcl::Label> euclidean_segmentation (euclidean_cluster_comparator_);
 			euclidean_segmentation.setInputCloud (input_cloud);
 			euclidean_segmentation.segment (euclidean_labels, euclidean_label_indices);
-			
+
 			for (size_t i = 0; i < euclidean_label_indices.size (); i++)
 			{
 				if (euclidean_label_indices[i].indices.size () > min_cluster_size && euclidean_label_indices[i].indices.size () < max_cluster_size)
@@ -94,8 +94,8 @@ void PlaneFitting::extractTabletopClusters(PointCloudT::ConstPtr input_cloud, pc
 
 					pcl::concatenateFields (*cluster, *cluster_normal, *cloud_final);
 					clusters_.push_back(cloud_final);
-				}    
-			}			
+				}
+			}
 		}
 	}
 	else
@@ -106,17 +106,17 @@ void PlaneFitting::extractTabletopClusters(PointCloudT::ConstPtr input_cloud, pc
 		pcl::ExtractPolygonalPrismData<pcl::PointXYZ> ex;
 		ex.setInputCloud (input_cloud);
 		ex.setInputPlanarHull (table_cloud_hull);
-		ex.setHeightLimits (table_z_filter_min, table_z_filter_max);  
+		ex.setHeightLimits (table_z_filter_min, table_z_filter_max);
 		ex.segment (cloud_object_indices);
 
 		PointCloudT cloud_objects;
 		pcl::ExtractIndices<PointT> extract_object_indices;
 		extract_object_indices.setInputCloud (input_cloud);
-		extract_object_indices.setIndices (boost::make_shared<const pcl::PointIndices> (cloud_object_indices));
+		extract_object_indices.setIndices (std::make_shared<const pcl::PointIndices> (cloud_object_indices));
 		extract_object_indices.filter (cloud_objects);
-		PointCloudT::ConstPtr cloud_objects_ptr = boost::make_shared<const PointCloudT > (cloud_objects);
+		PointCloudT::ConstPtr cloud_objects_ptr = std::make_shared<const PointCloudT > (cloud_objects);
 
-		if (cloud_objects_ptr->points.empty ()) 
+		if (cloud_objects_ptr->points.empty ())
 		{
 			PCL_ERROR ("No objects on plane.");
 			return;
@@ -145,7 +145,7 @@ void PlaneFitting::extractTabletopClusters(PointCloudT::ConstPtr input_cloud, pc
 
 			for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
 			{
-				cloud_cluster->points.push_back (cloud_objects_ptr->points[*pit]); 
+				cloud_cluster->points.push_back (cloud_objects_ptr->points[*pit]);
 				cloud_normal->points.push_back(input_normals->points[*pit]);
 			}
 

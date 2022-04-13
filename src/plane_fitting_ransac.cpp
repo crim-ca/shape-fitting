@@ -1,16 +1,16 @@
 #include "plane_fitting_ransac.h"
 
-PlaneFittingRansac::PlaneFittingRansac(double distance_threshold_, double cluster_tolerance_, int min_cluster_size_, int max_cluster_size_, bool do_refine_, double table_z_filter_min_, double table_z_filter_max_, double z_filter_min_, double z_filter_max_, double plane_detection_voxel_size_, double clustering_voxel_size_, int inlier_threshold_, double angle_threshold_) : 
+PlaneFittingRansac::PlaneFittingRansac(double distance_threshold_, double cluster_tolerance_, int min_cluster_size_, int max_cluster_size_, bool do_refine_, double table_z_filter_min_, double table_z_filter_max_, double z_filter_min_, double z_filter_max_, double plane_detection_voxel_size_, double clustering_voxel_size_, int inlier_threshold_, double angle_threshold_) :
 							PlaneFitting(table_z_filter_min_, table_z_filter_max_, cluster_tolerance_, min_cluster_size_, max_cluster_size_, inlier_threshold_, do_refine_),
 								z_filter_min(z_filter_min_),
 								z_filter_max(z_filter_max_),
 								plane_detection_voxel_size(plane_detection_voxel_size_),
 								clustering_voxel_size(clustering_voxel_size_),
-								angle_threshold(pcl::deg2rad(angle_threshold_)),	
+								angle_threshold(pcl::deg2rad(angle_threshold_)),
 								cloud_filtered_ptr(new PointCloudT()),
 								cloud_downsampled_ptr(new PointCloudT()),
 								cloud_normals_ptr(new pcl::PointCloud<pcl::Normal>()),
-								table_inliers_ptr(new pcl::PointIndices()),																																																																																							 
+								table_inliers_ptr(new pcl::PointIndices()),
 								table_coefficients_ptr(new pcl::ModelCoefficients)
 {
 	// Filtering parameters
@@ -22,8 +22,8 @@ PlaneFittingRansac::PlaneFittingRansac(double distance_threshold_, double cluste
 	grid_objects_.setLeafSize(clustering_voxel_size, clustering_voxel_size, clustering_voxel_size);
 	grid_objects_.setDownsampleAllData(false);
 
-	normals_tree_ = boost::make_shared<KdTree>();
-	clusters_tree_ = boost::make_shared<KdTree>();
+	normals_tree_ = std::make_shared<KdTree>();
+	clusters_tree_ = std::make_shared<KdTree>();
 
 	// Normal estimation parameters TODO: TIRAR
 	n3d_.setKSearch(10);
@@ -41,8 +41,8 @@ PlaneFittingRansac::PlaneFittingRansac(double distance_threshold_, double cluste
 	table_coefficients_ptr->values.resize(4);
 
 	mps.setMinInliers(inlier_threshold);
-	mps.setAngularThreshold(angle_threshold); 
-	mps.setDistanceThreshold(table_z_filter_min); 
+	mps.setAngularThreshold(angle_threshold);
+	mps.setDistanceThreshold(table_z_filter_min);
 	//mps.setMaximumCurvature();
 }
 
@@ -66,7 +66,7 @@ FittingData PlaneFittingRansac::fit(const PointCloudT::ConstPtr &point_cloud_in_
 		if (model_coefficients.size() > 0)
 		{
 			boundary_cloud->points = regions[0].getContour ();
-		
+
 			// Extract table
 			*table_coefficients_ptr = model_coefficients[0];
 			*table_inliers_ptr = inlier_indices[0];
