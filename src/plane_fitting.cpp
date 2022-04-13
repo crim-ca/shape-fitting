@@ -19,7 +19,7 @@ PlaneFitting::PlaneFitting(double table_z_filter_min_, double table_z_filter_max
 	labels(new pcl::PointCloud<pcl::Label>()),
 	inlier_threshold(inlier_threshold_)
 {
-	euclidean_cluster_comparator_ = pcl::EuclideanClusterComparator<pcl::PointXYZ,pcl::Normal,pcl::Label>::Ptr (new pcl::EuclideanClusterComparator<pcl::PointXYZ,pcl::Normal,pcl::Label> ());
+	euclidean_cluster_comparator_ = pcl::EuclideanClusterComparator<pcl::PointXYZ,pcl::Label>::Ptr (new pcl::EuclideanClusterComparator<pcl::PointXYZ,pcl::Label> ());
 	edge_aware_comparator_.reset (new pcl::EdgeAwarePlaneComparator<PointT, pcl::Normal> ());
 	euclidean_cluster_comparator_->setDistanceThreshold (cluster_tolerance, false);
 }
@@ -55,7 +55,7 @@ void PlaneFitting::extractTabletopClusters(PointCloudT::ConstPtr input_cloud, pc
 		//Segment Objects
 		if (regions.size () > 0)
 		{
-			std::vector<bool> plane_labels;
+			/*std::vector<bool> plane_labels;
 			for (size_t i = 0; i < label_indices.size (); ++i)
 			{
 				if (label_indices[i].indices.size () >= (unsigned int) inlier_threshold) // its a plane
@@ -67,8 +67,16 @@ void PlaneFitting::extractTabletopClusters(PointCloudT::ConstPtr input_cloud, pc
 					plane_labels.push_back (false);
 				}
 			}
+			*/
+			pcl::EuclideanClusterComparator<PointT, pcl::Label>::ExcludeLabelSetPtr plane_labels(
+				new pcl::EuclideanClusterComparator<PointT, pcl::Label>::ExcludeLabelSet
+			);
+			for (std::size_t i = 0; i < label_indices.size(); ++i)
+				if (label_indices[i].indices.size() > mps.getMinInliers())
+					plane_labels->insert(i);
+
 			euclidean_cluster_comparator_->setInputCloud (input_cloud);
-			euclidean_cluster_comparator_->setInputNormals (input_normals);
+			//euclidean_cluster_comparator_->setInputNormals (input_normals);
 			euclidean_cluster_comparator_->setLabels (labels);
 			euclidean_cluster_comparator_->setExcludeLabels (plane_labels);
 

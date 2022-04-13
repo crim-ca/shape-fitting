@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
+/*!
     \author Rui Figueiredo : ruipimentelfigueiredo
 */
 #ifndef PLANEFITTING_H
@@ -56,7 +56,7 @@ class PlaneFitting
 {
 	protected:
 	// params
-	double table_z_filter_min; 
+	double table_z_filter_min;
 	double table_z_filter_max;
 	double cluster_tolerance;
 	double min_cluster_size;
@@ -85,7 +85,7 @@ class PlaneFitting
 	std::vector<pcl::PointIndices> inlier_indices;
 
 	int inlier_threshold;
-	pcl::EuclideanClusterComparator<pcl::PointXYZ, pcl::Normal, pcl::Label>::Ptr euclidean_cluster_comparator_;
+	pcl::EuclideanClusterComparator<pcl::PointXYZ, pcl::Label>::Ptr euclidean_cluster_comparator_;
 	public:
 		PlaneFitting(double table_z_filter_min_, double table_z_filter_max_, double cluster_tolerance_=0.02, int min_cluster_size_=0.02,int max_cluster_size_=0.5, int inlier_threshold_=500, bool do_refine_=false);
 
