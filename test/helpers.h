@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
+/*!
     \author Rui Figueiredo : ruipimentelfigueiredo
 */
 #ifndef HELPERS_DATA_H
@@ -18,6 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <boost/filesystem.hpp>
 #include <ctime>
 #include <random>
+#include <iomanip>
 #include "yaml-cpp/yaml.h"
 
 
@@ -60,7 +61,7 @@ unsigned int sub_directory_count(const std::string& name)
     }
     else // must be a file
     {
-        std::cout << full_path.string() << "\n";    
+        std::cout << full_path.string() << "\n";
     }
     return dir_count;
 }
@@ -92,7 +93,7 @@ struct path_leaf_string
         return entry.path().leaf().string();
     }
 };
- 
+
 void readDirectory(const std::string& name, std::vector<std::string>& file_names)
 {
 	boost::filesystem::path p(name);
@@ -109,23 +110,23 @@ class Cylinder
 		Cylinder(const std::string & ground_truth_file)
 		{
 			std::fstream myfile(ground_truth_file, std::ios_base::in);
-			myfile >> std::setprecision(5) 
-			       >> radius 
-			       >> height 
-			       >> direction[0] 
+			myfile >> std::setprecision(5)
+			       >> radius
+			       >> height
+			       >> direction[0]
 			       >> direction[1]
-			       >> direction[2] 
-			       >> position[0] 
-			       >> position[1] 
+			       >> direction[2]
+			       >> position[0]
+			       >> position[1]
 			       >> position[2];
 
 			direction.normalize();
 		};
 
 		Cylinder(const double & radius_, const double & height_, const Eigen::Vector3d & direction_, const Eigen::Vector3d & position_, const std::string & ground_truth_file) :
-			radius(radius_), 
+			radius(radius_),
 			height(height_),
-			direction(direction_), 
+			direction(direction_),
 			position(position_)
 		{
 			direction.normalize();
@@ -133,7 +134,7 @@ class Cylinder
                         myfile.open(ground_truth_file);
                         myfile << std::setprecision(5)
                                << radius << " "
-                               << height << " " 
+                               << height << " "
                                << direction[0] << " "
                                << direction[1] << " "
                                << direction[2] << " "
@@ -157,15 +158,15 @@ class Sphere
 		Sphere(const std::string & ground_truth_file)
 		{
 			std::fstream myfile(ground_truth_file, std::ios_base::in);
-			myfile >> std::setprecision(5) 
-			       >> radius 
-			       >> position[0] 
-			       >> position[1] 
+			myfile >> std::setprecision(5)
+			       >> radius
+			       >> position[0]
+			       >> position[1]
 			       >> position[2];
 		};
 
 		Sphere(const double & radius_, const Eigen::Vector3d & position_, const std::string & ground_truth_file) :
-			radius(radius_), 
+			radius(radius_),
 			position(position_)
 		{
                         std::ofstream myfile;
@@ -184,15 +185,15 @@ class Sphere
 };
 
 
-std::ostream &operator<<(std::ostream &os, const Cylinder& obj) { 
+std::ostream &operator<<(std::ostream &os, const Cylinder& obj) {
 	return os << obj.radius << " " << obj.height << " " << obj.direction.transpose() << " " << obj.position.transpose() << std::endl;
 };
 
-std::ostream &operator<<(std::ostream &os, const Sphere& obj) { 
+std::ostream &operator<<(std::ostream &os, const Sphere& obj) {
 	return os << obj.radius << " " << obj.position.transpose() << std::endl;
 };
 
-class GroundTruth 
+class GroundTruth
 {
 	public:
 		GroundTruth(const std::string & dataset_path_)
@@ -207,13 +208,13 @@ class GroundTruth
 			for(size_t f=0;f<file_names.size();++f)
 			{
 				ground_truth.push_back(dataset_path_+file_names[f]);
-			}		
+			}
 		};
 
 		std::vector<Cylinder> ground_truth;
 };
 
-class PointClouds 
+class PointClouds
 {
 	public:
 		PointClouds(const std::string & dataset_path_)
@@ -245,7 +246,7 @@ class PointClouds
 				}
 				if(!token.empty())
 					file_names.push_back(aux_file_names[f]);
-			}	
+			}
 		};
 
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr loadPointCloudRGB(const std::string & file_path)
