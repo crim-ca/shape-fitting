@@ -32,13 +32,13 @@ int main (int argc, char** argv)
 
 	unsigned int gaussian_sphere_points_num=atoi(argv[6]);
 	std::cout << "gaussian_sphere_points_num: " << gaussian_sphere_points_num<< std::endl;
-	
+
 	float accumulator_peak_threshold=atof(argv[7]);
 	std::cout << "accumulator_peak_threshold: " << accumulator_peak_threshold<< std::endl;
-	
+
 	float min_radius=atof(argv[8]);
 	std::cout << "min_radius: " << min_radius << std::endl;
-		
+
 	float max_radius=atof(argv[9]);
 	std::cout << "max_radius: " << max_radius << std::endl;
 
@@ -75,13 +75,13 @@ int main (int argc, char** argv)
 	(unsigned int)angle_bins,
 	(unsigned int)radius_bins,
 	(unsigned int)position_bins,
-	(float)min_radius, 
+	(float)min_radius,
 	(float)max_radius,
 	(float)accumulator_peak_threshold,
 	mode,
-	false, 
+	false,
 	soft_voting));
-	
+
 	unsigned int current_dir=0;
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
@@ -105,7 +105,7 @@ int main (int argc, char** argv)
 			{
 				pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 				pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>());
-				
+
 				// Load 3D point cloud information in PCL format
 				point_cloud=point_clouds.loadPointCloud(pointcloud_clusters_sub_path+point_clouds.file_names[i]);
 
@@ -116,7 +116,7 @@ int main (int argc, char** argv)
 				ne.compute(*cloud_normals);
 				FittingData fitting_data=cylinder_fitting->fit(point_cloud,cloud_normals);
 
-				cluster_fitting_score << fitting_data.confidence << std::endl;
+				cluster_fitting_score << fitting_data << std::endl;
 
 				/* VISUALIZE */
 				if(visualize)
@@ -124,7 +124,7 @@ int main (int argc, char** argv)
 				/* END VISUALIZE */
 
 			}
-			catch (std::exception& e) 
+			catch (std::exception& e)
 			{
 				std::cout << e.what() << std::endl;
 				continue;

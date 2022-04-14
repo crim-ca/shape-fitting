@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
+/*!
     \author Rui Figueiredo : ruipimentelfigueiredo
 */
 #ifndef FITTINGDATA_H
@@ -106,20 +106,20 @@ class FittingData
 {
   public:
 	static double fitting_threshold;
-	FittingData() : confidence(1.0), type(FittingData::CYLINDER) 
+	FittingData() : confidence(1.0), type(FittingData::CYLINDER)
 	{}
 
 	FittingData(
-		const Eigen::VectorXf &parameters_, 
-		const double &confidence_, 
-		const unsigned int type_, 
-		PointCloudT::Ptr inliers_= PointCloudT::Ptr(), 
+		const Eigen::VectorXf &parameters_,
+		const double &confidence_,
+		const unsigned int type_,
+		PointCloudT::Ptr inliers_= PointCloudT::Ptr(),
 		PointCloudT::Ptr outliers_ = PointCloudT::Ptr(),
-		PointCloudT::Ptr contour_ = PointCloudT::Ptr()) : 
-			parameters(parameters_), 
-			confidence(confidence_), 
-			type(type_), 
-			inliers(inliers_), 
+		PointCloudT::Ptr contour_ = PointCloudT::Ptr()) :
+			parameters(parameters_),
+			confidence(confidence_),
+			type(type_),
+			inliers(inliers_),
 			outliers(outliers_),
 			contour(contour_),
 			id(++id_count)
@@ -141,9 +141,28 @@ class FittingData
 	static int id_count;
 	friend ostream &operator<<(std::ostream &os, const FittingData &ft)
 	{
+		os << "Parameters:" << std::endl;
 		for (unsigned int i = 0; i < ft.parameters.size(); ++i)
 		{
-			os << ft.parameters[i] << " ";
+			os << "  " << ft.parameters[i] << std::endl;
+		}
+		os << "Confidence: " << ft.confidence << std::endl;
+		switch (ft.type) {
+			case CYLINDER:
+				os << "Type: CYLINDER" << std::endl;
+				break;
+			case SPHERE:
+				os << "Type: SPHERE" << std::endl;
+				break;
+			case PLANE:
+				os << "Type: PLANE" << std::endl;
+				break;
+			case OTHER:
+				os << "Type: OTHER" << std::endl;
+				break;
+			default:
+				os << "Type: UNDEFINED" << std::endl;
+				break;
 		}
 		return os;
 	}
