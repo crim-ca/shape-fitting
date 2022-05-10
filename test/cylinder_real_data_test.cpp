@@ -152,7 +152,7 @@ int main (int argc, char** argv)
 						break;
 					else
 						std::cout << "Confidence too low [" << fitting_data.confidence << "], "
-								  << "retrying... (" << i_attempt << "/" << max_attempts << ")" << std::endl;
+								  << "retrying... (" << i_attempt + 1 << "/" << max_attempts << ")" << std::endl;
 				}
 
 				cluster_fitting_score << best_fit << std::endl;
