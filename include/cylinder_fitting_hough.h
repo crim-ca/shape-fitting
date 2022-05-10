@@ -8,13 +8,15 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
+/*!
     \author Rui Figueiredo : ruipimentelfigueiredo
 */
 
 #ifndef CYLINDERFITTINGHOUGH_H
 #define CYLINDERFITTINGHOUGH_H
 #include "cylinder_fitting.h"
+
+#include <vector>
 
 class CylinderFittingHough : public CylinderFitting
 {
@@ -27,6 +29,7 @@ class CylinderFittingHough : public CylinderFitting
 
 	static const unsigned int NORMAL=0;
 	static const unsigned int HYBRID=1;
+	static const unsigned int CURVES=2;
 	// private attributes
 
 	// Direction HT
@@ -40,6 +43,7 @@ class CylinderFittingHough : public CylinderFitting
 	unsigned int radius_bins;
 	unsigned int position_bins;
 	double r_step;
+	std::vector<double> r_values;
 	double accumulator_peak_threshold;
 
 	std::vector<std::vector<std::vector<unsigned int> > > cyl_circ_accum;
@@ -54,8 +58,15 @@ class CylinderFittingHough : public CylinderFitting
 	std::tuple<Eigen::Vector3d, double> findCylinderDirection(const pcl::PointCloud<pcl::Normal>::ConstPtr & normal_cloud, const PointCloudT::ConstPtr & point_cloud_in_);
 	Eigen::Matrix<double,5,1> findCylinderPositionRadius(const PointCloudT::ConstPtr & point_cloud_in_, const pcl::PointCloud<pcl::Normal>::ConstPtr & normal_cloud);
 
+	std::vector<double> getRadiusValues();
+
 	public:
-		CylinderFittingHough(const OrientationAccumulatorSpace & gaussian_sphere_, unsigned int angle_bins_=30,unsigned int radius_bins_=10,unsigned int position_bins_=10,double min_radius_=0.01,double max_radius_=0.1, double accumulator_peak_threshold_=0.2, unsigned int mode_=0, bool do_refine_=false, bool soft_voting_=true, double orientation_peak_threshold_=0.003);
+		CylinderFittingHough(
+			const OrientationAccumulatorSpace & gaussian_sphere_,
+			unsigned int angle_bins_=30,unsigned int radius_bins_=10,unsigned int position_bins_=10,
+			double min_radius_=0.01,double max_radius_=0.1, const std::vector<double>& r_values_ = {},
+			double accumulator_peak_threshold_=0.2, unsigned int mode_=0, bool do_refine_=false, bool soft_voting_=true,
+			double orientation_peak_threshold_=0.003);
 
 		FittingData fit(const PointCloudT::ConstPtr & point_cloud_in_,const pcl::PointCloud<pcl::Normal>::ConstPtr & cloud_normal_in_);
 
