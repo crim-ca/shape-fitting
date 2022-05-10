@@ -19,7 +19,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <ctime>
 #include <random>
 #include <iomanip>
+#include <stdio.h>
+#include <string.h>
 #include "yaml-cpp/yaml.h"
+
+
+std::vector<double> splitNumbers(char *arg) {
+	std::vector<double> values;
+	const char delims[] = " ,;";
+	auto val = strtok(arg, delims);
+	while (val != NULL)
+	{
+		values.push_back(atof(val));
+		val = strtok(NULL, delims);
+	}
+	return values;
+}
 
 
 unsigned int sub_directory_count(const std::string& name)
@@ -280,5 +295,3 @@ class PointClouds
 
 
 #endif // HELPERS_DATA_H
-
-

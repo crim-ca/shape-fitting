@@ -8,11 +8,13 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
-    \author Rui Figueiredo : ruipimentelfigueiredo
+/*!
+	\author Rui Figueiredo : ruipimentelfigueiredo
 */
 
 #include <ctime>
+#include <algorithm>
+#include <vector>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 #include "cylinder_fitting_hough.h"
@@ -52,31 +54,37 @@ int main (int argc, char** argv)
 
 	unsigned int gaussian_sphere_points_num=atoi(argv[6]);
 	std::cout << "gaussian_sphere_points_num: " << gaussian_sphere_points_num<< std::endl;
-	
-	float accumulator_peak_threshold=atof(argv[7]);
+
+	double accumulator_peak_threshold=atof(argv[7]);
 	std::cout << "accumulator_peak_threshold: " << accumulator_peak_threshold<< std::endl;
-	
-	float min_radius=atof(argv[8]);
+
+	double min_radius=atof(argv[8]);
 	std::cout << "min_radius: " << min_radius << std::endl;
-		
-	float max_radius=atof(argv[9]);
+
+	double max_radius=atof(argv[9]);
 	std::cout << "max_radius: " << max_radius << std::endl;
-	
+
+	std::vector<double> radius_values = splitNumbers(argv[10]);
+	std::cout << "radius values:" << std::endl;
+	for (auto value : radius_values)
+		std::cout << "  " << value << std::endl;
+	std::sort(radius_values.begin(), radius_values.end());
+
 	// RANSAC PARAMETERS
-	float normal_distance_weight=atof(argv[10]);
+	double normal_distance_weight=atof(argv[11]);
 	std::cout << "normal_distance_weight: " << normal_distance_weight<< std::endl;
 
-	float distance_threshold=atof(argv[11]);
+	double distance_threshold=atof(argv[12]);
 	std::cout << "distance_threshold: " << distance_threshold << std::endl;
 
-	bool do_refine=atoi(argv[12]);
+	bool do_refine=atoi(argv[13]);
 	std::cout << "do_refine: " << do_refine << std::endl;
 
-	bool visualize=atoi(argv[13]);
+	bool visualize=atoi(argv[14]);
 	std::cout << "visualize: " << visualize << std::endl;
 
 	boost::shared_ptr<VisualizeFittingData> visualizer;
-	
+
 	if(visualize)
 		visualizer=boost::shared_ptr<VisualizeFittingData>(new VisualizeFittingData());
 
@@ -125,24 +133,49 @@ int main (int argc, char** argv)
 	std::vector<boost::shared_ptr<CylinderFitting> > cylinder_segmentators;
 
 	// HOUGH RABANI
-	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (new CylinderFittingHough(gaussian_sphere,(unsigned int)angle_bins,(unsigned int)radius_bins,(unsigned int)position_bins,(float)min_radius, (float)max_radius,(float)accumulator_peak_threshold,CylinderFittingHough::NORMAL, false, false)));
+	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (
+		new CylinderFittingHough(
+			gaussian_sphere, angle_bins, radius_bins, position_bins, min_radius, max_radius, radius_values,
+			accumulator_peak_threshold, CylinderFittingHough::NORMAL, false, false)
+		)
+	);
 
 	// HOUGH HYBRID (soft-voting)
-	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (new CylinderFittingHough(gaussian_sphere,(unsigned int)angle_bins,(unsigned int)radius_bins,(unsigned int)position_bins,(float)min_radius, (float)max_radius,(float)accumulator_peak_threshold,CylinderFittingHough::HYBRID,false, true)));
+	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (
+		new CylinderFittingHough(
+			gaussian_sphere, angle_bins, radius_bins, position_bins, min_radius, max_radius, radius_values,
+			accumulator_peak_threshold, CylinderFittingHough::HYBRID, false, true
+		)
+	));
 
 	// HOUGH HYBRID BIASED (soft-voting)
-	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (new CylinderFittingHough(gaussian_sphere_biased,(unsigned int)angle_bins,(unsigned int)radius_bins,(unsigned int)position_bins,(float)min_radius, (float)max_radius,(float)accumulator_peak_threshold,CylinderFittingHough::HYBRID,false, true)));	
+	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (
+		new CylinderFittingHough(
+			gaussian_sphere_biased, angle_bins, radius_bins, position_bins, min_radius, max_radius, radius_values,
+			accumulator_peak_threshold, CylinderFittingHough::HYBRID, false, true
+		)
+	));
 
 	// HOUGH HYBRID SUPER BIASED (soft-voting)
-	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (new CylinderFittingHough(gaussian_sphere_super_biased,(unsigned int)angle_bins,(unsigned int)radius_bins,(unsigned int)position_bins,(float)min_radius, (float)max_radius,(float)accumulator_peak_threshold,CylinderFittingHough::HYBRID,false, true)));
-	
+	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (
+		new CylinderFittingHough(
+			gaussian_sphere_super_biased, angle_bins, radius_bins, position_bins, min_radius, max_radius, radius_values,
+			accumulator_peak_threshold, CylinderFittingHough::HYBRID, false, true
+		)
+	));
+
 	// HOUGH HYBRID (soft-voting ICARSC)
-	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (new CylinderFittingHough(gaussian_sphere,(unsigned int)angle_bins,(unsigned int)radius_bins,(unsigned int)position_bins,(float)min_radius, (float)max_radius,(float)accumulator_peak_threshold,2,false, true)));
+	cylinder_segmentators.push_back(boost::shared_ptr<CylinderFittingHough> (
+		new CylinderFittingHough(
+			gaussian_sphere, angle_bins, radius_bins, position_bins, min_radius, max_radius, radius_values,
+			accumulator_peak_threshold, CylinderFittingHough::CURVES, false, true
+		)
+	));
 
 	// Get ground truths
 	GroundTruth ground_truths(ground_truth_dir);
 	std::cout << "Number of ground truths:" << ground_truths.ground_truth.size() << std::endl;
-	
+
 	// Get point clouds
 	PointClouds point_clouds(point_clouds_dir);
 	std::cout << "Number of point_clouds:" << point_clouds.file_names.size() << std::endl;
@@ -177,12 +210,12 @@ int main (int argc, char** argv)
 		std::fstream fs_time;
 
 		fs_orientation.open (output_dir+"orientation_" + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
-		fs_radius.open (output_dir+"radius_"           + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
-		fs_position.open (output_dir+"position_"       + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
-		fs_time.open (output_dir+"time_"               + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
+		fs_radius.open (output_dir+"radius_" + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
+		fs_position.open (output_dir+"position_" + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
+		fs_time.open (output_dir+"time_" + std::to_string(d)+".txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
 
 		for(unsigned int i=0;i<point_clouds.file_names.size();++i)
-		{	
+		{
 			// Ground truth iterations
 			unsigned int iteration=i % ground_truths.ground_truth.size();
 

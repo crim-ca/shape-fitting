@@ -1,5 +1,7 @@
 #include <ctime>
 #include <chrono>
+#include <algorithm>
+#include <vector>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -42,14 +44,34 @@ int main (int argc, char** argv)
 	float max_radius=atof(argv[9]);
 	std::cout << "max_radius: " << max_radius << std::endl;
 
-	int mode=atof(argv[10]);
+	std::vector<double> radius_values = splitNumbers(argv[10]);
+	std::cout << "radius values:" << std::endl;
+	for (auto value : radius_values)
+		std::cout << "  " << value << std::endl;
+	std::sort(radius_values.begin(), radius_values.end());
+
+	int mode=atof(argv[11]);
 	std::cout << "mode: " << mode << std::endl;
 
-	bool soft_voting=atoi(argv[11]);
+	bool soft_voting=atoi(argv[12]);
 	std::cout << "soft_voting: " << soft_voting << std::endl;
 
-	bool visualize=atoi(argv[12]);
+	bool visualize=atoi(argv[13]);
 	std::cout << "visualize: " << visualize << std::endl;
+
+	double min_confidence = 0.8;
+	if (argc > 14)
+		min_confidence = atof(argv[14]);
+	if (min_confidence < 0.0)
+		min_confidence = 0.0;
+	std::cout << "min confidence: " << visualize << std::endl;
+
+	unsigned int max_attempts = 10;
+	if (argc > 15)
+		max_attempts = atoi(argv[15]);
+	if (max_attempts < 1)
+		max_attempts = 1;
+	std::cout << "max attempts: " << max_attempts << std::endl;
 
 	std::vector<std::string> image_files,annotation_files,point_cloud_files;
 
@@ -68,20 +90,6 @@ int main (int argc, char** argv)
 	Eigen::Matrix<double, 3 ,1> std_dev_eigen(0.5,0.5,0.5);
 	std_devs.push_back(std_dev_eigen);
 
-	GaussianMixtureModel gmm(weights,means,std_devs);
-	GaussianSphere gaussian_sphere(gmm,gaussian_sphere_points_num,orientation_accumulators_num);
-
-	boost::shared_ptr<CylinderFittingHough> cylinder_fitting(new CylinderFittingHough(gaussian_sphere,
-	(unsigned int)angle_bins,
-	(unsigned int)radius_bins,
-	(unsigned int)position_bins,
-	(float)min_radius,
-	(float)max_radius,
-	(float)accumulator_peak_threshold,
-	mode,
-	false,
-	soft_voting));
-
 	unsigned int current_dir=0;
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
@@ -93,7 +101,7 @@ int main (int argc, char** argv)
 	{
 		std::cout << "directory number:" << ++current_dir << std::endl;
 
-		std::string pointcloud_clusters_sub_path	    = pointcloud_clusters_path+itr->path().filename().string()+"/";
+		std::string pointcloud_clusters_sub_path = pointcloud_clusters_path+itr->path().filename().string()+"/";
 		PointClouds point_clouds(pointcloud_clusters_sub_path);
 		std::string results_path_current=pointcloud_clusters_sub_path+"results/";
 
@@ -114,13 +122,44 @@ int main (int argc, char** argv)
 				ne.setSearchMethod(tree);
 				ne.setInputCloud(point_cloud);
 				ne.compute(*cloud_normals);
-				FittingData fitting_data=cylinder_fitting->fit(point_cloud,cloud_normals);
 
-				cluster_fitting_score << fitting_data << std::endl;
+				FittingData best_fit;
+				best_fit.confidence = 0.0;
+
+				for (unsigned int i_attempt=0; i_attempt < max_attempts; ++i_attempt) {
+					// Random initialization parameters from gaussian normal distributions can make estimated results
+					// very good or very bad. Retry as necessary to obtain highest possible confidence.
+					GaussianMixtureModel gmm(weights,means,std_devs);
+					GaussianSphere gaussian_sphere(gmm,gaussian_sphere_points_num,orientation_accumulators_num);
+					boost::shared_ptr<CylinderFittingHough> cylinder_fitting(new CylinderFittingHough(
+						gaussian_sphere,
+						angle_bins,
+						radius_bins,
+						position_bins,
+						min_radius,
+						max_radius,
+						radius_values,
+						accumulator_peak_threshold,
+						mode,
+						false,
+						soft_voting
+					));
+
+					FittingData fitting_data=cylinder_fitting->fit(point_cloud,cloud_normals);
+					if (fitting_data.confidence > best_fit.confidence)
+						best_fit = fitting_data;
+					if (fitting_data.confidence >= min_confidence)
+						break;
+					else
+						std::cout << "Confidence too low [" << fitting_data.confidence << "], "
+								  << "retrying... (" << i_attempt << "/" << max_attempts << ")" << std::endl;
+				}
+
+				cluster_fitting_score << best_fit << std::endl;
 
 				/* VISUALIZE */
 				if(visualize)
-					fitting_data.visualize(point_cloud,visualizer);
+					best_fit.visualize(point_cloud,visualizer);
 				/* END VISUALIZE */
 
 			}

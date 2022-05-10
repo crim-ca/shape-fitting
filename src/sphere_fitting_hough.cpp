@@ -8,13 +8,13 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*!    
+/*!
     \author Rui Figueiredo : ruipimentelfigueiredo
 */
 
 #include "sphere_fitting_hough.h"
 
-SphereFittingHough::SphereFittingHough(const OrientationAccumulatorSpace & gaussian_sphere_, unsigned int position_bins_, unsigned int radius_bins_,double min_radius_,double max_radius_, double accumulator_peak_threshold_, bool do_refine_, bool soft_voting_) : 
+SphereFittingHough::SphereFittingHough(const OrientationAccumulatorSpace & gaussian_sphere_, unsigned int position_bins_, unsigned int radius_bins_,double min_radius_,double max_radius_, double accumulator_peak_threshold_, bool do_refine_, bool soft_voting_) :
 	SphereFitting(min_radius_,max_radius_),
 	gaussian_sphere(new OrientationAccumulatorSpace(gaussian_sphere_)),
 	radius_bins(radius_bins_),
@@ -25,7 +25,7 @@ SphereFittingHough::SphereFittingHough(const OrientationAccumulatorSpace & gauss
 	cloud_normals(new pcl::PointCloud<pcl::Normal>),
 	tree(new pcl::search::KdTree<PointT> ())
 {
-	// Alocate memory for sphere accumulator
+	// Allocate memory for sphere accumulator
 	sphere_accum.resize(radius_bins);
 	radii.resize(radius_bins);
 	for(unsigned int r_index=0;r_index<radius_bins;++r_index)
@@ -73,7 +73,7 @@ FittingData SphereFittingHough::fit(const PointCloudT::ConstPtr & point_cloud_in
 	double x_position_step_inv=1.0/x_position_step;
 	double y_position_step_inv=1.0/y_position_step;
 	double z_position_step_inv=1.0/z_position_step;
-	
+
 	double x_offset=min_pt[0] - max_radius;
 	double y_offset=min_pt[1] - max_radius;
 	double z_offset=min_pt[2] - max_radius;
@@ -96,7 +96,7 @@ FittingData SphereFittingHough::fit(const PointCloudT::ConstPtr & point_cloud_in
 		{
 			double theta=atan2(gaussian_sphere_voting[i][1],gaussian_sphere_voting[i][0]);
 			double phi=acos(gaussian_sphere_voting[i][2]);
-		
+
 			double cos_theta=cos(theta);
 			double sin_theta=sin(theta);
 			double cos_phi=cos(phi);
@@ -106,7 +106,7 @@ FittingData SphereFittingHough::fit(const PointCloudT::ConstPtr & point_cloud_in
 			for(unsigned int s = 0; s < point_cloud_in_->size(); ++s)
 			{
 				// if sphere center dot normal < 0 => continue
-				if(Eigen::Vector3d(point_cloud_in_->points[s].x+cos_theta_sin_phi,point_cloud_in_->points[s].y+sin_theta_sin_phi,point_cloud_in_->points[s].z+cos_phi).normalized().dot(cloud_normals->points[s].getNormalVector3fMap ().cast<double>()) <0) 
+				if(Eigen::Vector3d(point_cloud_in_->points[s].x+cos_theta_sin_phi,point_cloud_in_->points[s].y+sin_theta_sin_phi,point_cloud_in_->points[s].z+cos_phi).normalized().dot(cloud_normals->points[s].getNormalVector3fMap ().cast<double>()) <0)
 					continue;
 
 				for(unsigned int r_index=0; r_index<radius_bins; ++r_index)
@@ -129,7 +129,7 @@ FittingData SphereFittingHough::fit(const PointCloudT::ConstPtr & point_cloud_in
 		{
 			double theta=atan2(gaussian_sphere_voting[i][1],gaussian_sphere_voting[i][0]);
 			double phi=acos(gaussian_sphere_voting[i][2]);
-		
+
 			double cos_theta=cos(theta);
 			double sin_theta=sin(theta);
 			double cos_phi=cos(phi);
@@ -164,7 +164,7 @@ FittingData SphereFittingHough::fit(const PointCloudT::ConstPtr & point_cloud_in
 			{
 				for(unsigned int z_index=0;z_index<position_bins;++z_index)
 				{
-					if(sphere_accum[r_index][x_index][y_index][z_index]>most_votes) 
+					if(sphere_accum[r_index][x_index][y_index][z_index]>most_votes)
 					{
 						best_r_bin=r_index;
 						best_x_bin=x_index;
@@ -188,12 +188,11 @@ FittingData SphereFittingHough::fit(const PointCloudT::ConstPtr & point_cloud_in
 
 	// Create the filtering object
 	PointCloudT::Ptr cloud_projected(new PointCloudT);
-	pcl::SampleConsensusModelSphere<PointT>::Ptr dit (new pcl::SampleConsensusModelSphere<PointT> (point_cloud_in_)); 
+	pcl::SampleConsensusModelSphere<PointT>::Ptr dit (new pcl::SampleConsensusModelSphere<PointT> (point_cloud_in_));
 
-	std::vector<int> inliers; 
-	dit -> selectWithinDistance (coeffs, 0.01, inliers); 
-	pcl::copyPointCloud<PointT>(*point_cloud_in_, inliers, *cloud_projected); 
+	std::vector<int> inliers;
+	dit -> selectWithinDistance (coeffs, 0.01, inliers);
+	pcl::copyPointCloud<PointT>(*point_cloud_in_, inliers, *cloud_projected);
 	double inlier_ratio_=((double)cloud_projected->size()/(double)point_cloud_in_->size());
 	return FittingData(coeffs,inlier_ratio_,FittingData::SPHERE,cloud_projected);
 };
-
